@@ -1,0 +1,78 @@
+version: "3.3"
+
+services:
+  traefik:
+    image: "traefik:v2.4"
+    container_name: "traefik"
+    command:
+      # - "--log.level=DEBUG"
+      - "--global.sendanonymoususage=false"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.watch=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.filename=/dynamic.yml"
+      - "--providers.file.watch=true"
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https=true"
+      - "--entrypoints.https.address=:443"
+      - "--api"
+      - "--metrics"
+      - "--metrics.prometheus"
+      - "--providers.docker.network=traefik-public"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - ./docker/traefik/certs:/certs
+      - ./docker/traefik/dynamic.yml:/dynamic.yml
+    restart: always
+    networks:
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.docker.localhost`)"
+      - "traefik.http.routers.traefik.entrypoints=https"
+      - "traefik.http.routers.traefik.tls=true"
+      #- "traefik.http.routers.traefik.tls.domains[0].main=traefik.docker"
+      #- "traefik.http.routers.traefik.tls.domains[0].sans=traefik.docker"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+
+  whoami:
+    image: "containous/whoami"
+    container_name: "simple-whoami"
+    networks:
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`whoami.docker.localhost`)"
+      - "traefik.http.routers.whoami.entrypoints=http"
+      - "traefik.http.routers.whoami-secure.entrypoints=https"
+      - "traefik.http.routers.whoami-secure.rule=Host(`whoami.docker.localhost`)"
+      - "traefik.http.routers.whoami-secure.tls=true"
+
+  portainer:
+    container_name: "portainer"
+    image: portainer/portainer
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.docker.localhost`)"
+      - "traefik.http.routers.portainer.entrypoints=http"
+      - "traefik.http.routers.portainer-secure.rule=Host(`portainer.docker.localhost`)"
+      - "traefik.http.routers.portainer-secure.entrypoints=https"
+      - "traefik.http.routers.portainer-secure.tls=true"
+
+volumes:
+  portainer_data:
+
+networks:
+  traefik-public:
+    external: true
