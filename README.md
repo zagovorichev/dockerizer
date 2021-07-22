@@ -59,18 +59,18 @@ sudo apt install dnsmasq
 # change these files according to dnsmasq docs:
 
 sudo vim /etc/dnsmasq.conf
-```
-listen-address=127.0.0.1
-```
+
+> listen-address=127.0.0.1
+
 
 sudo vim /etc/dnsmasq.d/localhost.conf
-```
-address=/localhost/127.0.0.1
-```
+
+> address=/localhost/127.0.0.1
+
 sudo vim /etc/dhcp/dhclient.conf
-```
-prepend domain-name-servers 127.0.0.1;
-```
+
+> prepend domain-name-servers 127.0.0.1;
+
 systemctl restart dnsmasq
 systemctl enable dnsmasq
 sudo dhclient
