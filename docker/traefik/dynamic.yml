@@ -2,12 +2,6 @@ tls:
   certificates:
     - certFile: "/certs/_wildcard.docker.localhost.pem"
       keyFile: "/certs/_wildcard.docker.localhost-key.pem"
-      stores:
-        - default
-    - certFile: "/certs/traefik.docker.pem"
-      keyFile: "/certs/traefik.docker-key.pem"
-    - certFile: "/certs/_wildcard.docker.pem"
-      keyFile: "/certs/_wildcard.docker-key.pem"
   stores:
     default:
       defaultCertificate:
